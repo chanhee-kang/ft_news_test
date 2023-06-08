@@ -1,11 +1,20 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/initSupabase';
-import { Button } from '@material-ui/core';
+import { Button, Box } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
 import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import Typography from '@material-ui/core/Typography';
+import Link from '@material-ui/core/Link';
+import TableContainer from '@material-ui/core/TableContainer';
+import Table from '@material-ui/core/Table';
+import TableHead from '@material-ui/core/TableHead';
+import TableBody from '@material-ui/core/TableBody';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
+
 
 const XLSX = require('xlsx');
 
@@ -74,7 +83,7 @@ export default function CountryList() {
   return (
     <>
 
-    <div style={{ display: 'flex', alignItems: 'center' }}>
+    <Box style={{ display: 'flex', alignItems: 'center' }}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
           label="calender"
@@ -91,9 +100,9 @@ export default function CountryList() {
       >
         엑셀 다운로드
       </Button>
-    </div>
+    </Box>
     
-    <div style={{ height: 600, width: '100%' }}>
+    <Box style={{ height: 600, width: '100%' }}>
       <DataGrid
         rows={countries}
         columns={columns}
@@ -102,7 +111,7 @@ export default function CountryList() {
         onRowClick={handleRowClick}
       />
       {selectedRow && (      
-        <div
+        <Box
           style={{
             position: 'fixed',
             top: 0,
@@ -115,7 +124,7 @@ export default function CountryList() {
           }}
           onClick={handleClose}
         >
-          <div
+          <Box
             style={{
               position: 'absolute',
               top: '50%',
@@ -123,26 +132,67 @@ export default function CountryList() {
               transform: 'translate(-50%, -50%)',
               backgroundColor: '#fff',
               padding: 20,
-              maxHeight: '80vh',
               overflowY: 'auto',
+              maxHeight: '80vh', // Set a maximum height for scrolling
+              minWidth: 1000, // Set a maximum width if needed
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3>▲{selectedRow.title}</h3>
-            <p>{selectedRow.dates}</p>
-            <p><strong>영문요약</strong></p>
-            <p>{selectedRow.en_summary}</p>
-            <p><strong>국문요약</strong></p>
-            <p>{selectedRow.ko_summary}</p>
-            <p><strong>원본링크</strong></p>
-            <a href={selectedRow.link} rel="noreferrer" target="_blank">{selectedRow.link}</a>
-            <p><strong>타입 </strong></p>
-            <p>{selectedRow.type}</p>
-            
-          </div>
-        </div>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>
+                      <Typography variant="h4">▲{selectedRow.title}</Typography>
+                      <Typography variant="subtitle1">
+                        <strong>날짜</strong> : {selectedRow.dates}</Typography>
+                    </TableCell>
+                  </TableRow>
+                  
+                  </TableHead>
+                <TableBody>
+                  
+                  <TableRow>
+                    <TableCell>
+                      <Typography variant="subtitle1">
+                        <strong>영문요약</strong>
+                      </Typography>
+                      <Typography>{selectedRow.en_summary}</Typography>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <Typography variant="subtitle1">
+                        <strong>국문요약</strong>
+                      </Typography>
+                      <Typography>{selectedRow.ko_summary}</Typography>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <Typography variant="subtitle1">
+                        <strong>원본링크</strong>
+                      </Typography>
+                      <Link href={selectedRow.link} rel="noreferrer" target="_blank">
+                        {selectedRow.link}
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <Typography variant="subtitle1">
+                        <strong>타입</strong>
+                      </Typography>
+                      <Typography>{selectedRow.type}</Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Box>
     </>
   );
 }

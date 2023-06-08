@@ -1,5 +1,5 @@
 import CountryList from '../components/CountryList';
-import { Grid, TextField, Button } from '@material-ui/core';
+import { Grid, TextField, Button, Box } from '@material-ui/core';
 import { supabase } from '../lib/initSupabase';
 import { useState } from 'react';
 import 'react-calendar/dist/Calendar.css';
@@ -28,18 +28,19 @@ export default function Home() {
   return (
     <main>
       <header style={{backgroundColor: "white"}}>
-      <div className="header-left">
+      <Box className="header-left">
         <a href="#" className="header-logo">Financial Times 뉴스 요약</a>
         
-      </div>
-      <div className="header-right">
+      </Box>
+      <Box className="header-right">
         <Button variant="contained" color="primary" onClick={toggleTextField}>
           {showTextField ? "Hide Text Field" : "Show Text Field"}
           </Button>
          
-      </div>
+      </Box>
     </header>
-    <div height ="10"></div>
+    
+    <Box height ="10"></Box>
   
       <Grid container spacing={3}>
         <Grid item xs={12} md={showTextField ? 7 : 12}>
