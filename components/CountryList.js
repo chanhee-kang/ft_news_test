@@ -14,18 +14,20 @@ import TableHead from '@material-ui/core/TableHead';
 import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import { SiMicrosoftexcel } from "react-icons/si";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+
+
 
 
 const XLSX = require('xlsx');
 
 const columns = [
-  { field: 'title', headerName: '제목', width: 600 },
+  { field: 'title', headerName: '제목', width: 800, },
   { field: 'type', headerName: '타입', width: 120 },
   { field: 'dates', headerName: '날짜', width: 150 },
-  { field: 'en_summary', headerName: '영문요약', width: 500 },
-  { field: 'ko_summary', headerName: '국문요약', width: 500 },
-  { field: 'link', headerName: '링크', width: 200 },
 ];
+
 
 export default function CountryList() {
   const [countries, setCountries] = useState([]);
@@ -67,7 +69,65 @@ export default function CountryList() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
     XLSX.writeFile(workbook, `FT_${test}.xlsx`);
   }
+  const TopWords = () => {
+    const [countries, setCountries] = useState([]);
+    const [selectedRow, setSelectedRow] = useState(null);
+
+  let dateObj = new Date();
+  let options = {timeZone: "Asia/Seoul"};
+  let dateString = dateObj.toLocaleString("en-US", options).slice(0, 10);
+
+  const [value, setValue] = useState(dayjs(dateString));
   
+  const handleRowClick = (params) => {
+    setSelectedRow(params.row);
+  };
+
+  const handleClose = () => {
+    setSelectedRow(null);
+  };
+  const TopWordsChart = ({ data,test }) => {
+    const chartColors = ['#0070C0'];
+    return (
+      <BarChart width={600} height={400} data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="word" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="frequency" fill="#000033" />
+      </BarChart>
+    );
+  };
+  
+  // const dValue = value.$d
+  // const test = `${dValue.getFullYear()}-${(dValue.getMonth()+1).toString().padStart(2, '0')}-${dValue.getDate().toString().padStart(2, '0')}`
+  
+  useEffect(() => {
+    const fetchCountries = async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const { data: countries } = await supabase
+        .from('top_words')
+        .select('*')
+        .eq('dates', test)
+      setCountries(countries);
+    };
+    fetchCountries();
+  }, [test])
+
+
+
+  const data = countries.map((item) => {
+    const [word, frequency] = JSON.parse(item.top_words);
+    return { word, frequency };
+  });
+
+  return (
+    <>
+      <TopWordsChart data={data} />
+    </>
+  );
+  }
+
   useEffect(() => {
     const fetchCountries = async () => {
       const today = new Date().toISOString().slice(0, 10);
@@ -80,35 +140,57 @@ export default function CountryList() {
     fetchCountries();
   }, [test])
 
+  const countriess = countries.map(obj => {
+    const EN_summary = obj.en_summary.replace(/- /g, '<br>- ');
+    const KO_summary = obj.ko_summary.replace(/- /g, '<br>- ');
+    const ClearBody = obj.body.replace(/[^a-zA-Z0-9\s]/g, '');
+
+    return {
+      id : obj.id,
+      title: obj.title,
+      type: obj.type,
+      dates: obj.dates,
+      en_summary: EN_summary,
+      ko_summary: KO_summary,
+      link: obj.link,
+      body: ClearBody,
+    };
+  });
+
   return (
     <>
+      <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            value={value}
+            onChange={(newValue) => setValue(newValue)}
+            sx={{
+              width: '200px',
+              '& ': {
+                width: 180,
+              },
+            }}
+          />
+        </LocalizationProvider>
 
-    <Box style={{ display: 'flex', alignItems: 'center' }}>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DatePicker
-          label="calender"
-          value={value}
-          onChange={(newValue) => setValue(newValue)}
-        />
-      </LocalizationProvider>
+        <Button
+          onClick={excelDownload}
+          style={{ height: '55px', backgroundColor: 'white', border: '1px solid #C0C0C0' }}
+        >
+          <SiMicrosoftexcel color="#247967" size={28} />
+        </Button>
+      </Box>
 
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={excelDownload}
-        style={{ marginLeft: '16px' }} // Optional styling to add some space between the two components
-      >
-        엑셀 다운로드
-      </Button>
-    </Box>
+    <Box style={{ height:'20px' }} />
     
-    <Box style={{ height: 600, width: '100%' }}>
+    <Box style={{ height: 700, width: '100%' }}>
       <DataGrid
-        rows={countries}
+        rows={countriess}
         columns={columns}
-        pageSize={10}
+        pageSize={20}
         rowsPerPageOptions={[10]}
         onRowClick={handleRowClick}
+        getRowClassName={(params) => 'custom-row-class'}
       />
       {selectedRow && (      
         <Box
@@ -157,7 +239,8 @@ export default function CountryList() {
                       <Typography variant="subtitle1">
                         <strong>영문요약</strong>
                       </Typography>
-                      <Typography>{selectedRow.en_summary}</Typography>
+                      <Typography dangerouslySetInnerHTML={{ __html: selectedRow.en_summary }}></Typography>
+
                     </TableCell>
                   </TableRow>
                   <TableRow>
@@ -165,9 +248,10 @@ export default function CountryList() {
                       <Typography variant="subtitle1">
                         <strong>국문요약</strong>
                       </Typography>
-                      <Typography>{selectedRow.ko_summary}</Typography>
+                      <Typography dangerouslySetInnerHTML={{ __html: selectedRow.ko_summary }}></Typography>
                     </TableCell>
                   </TableRow>
+
                   <TableRow>
                     <TableCell>
                       <Typography variant="subtitle1">
@@ -178,6 +262,7 @@ export default function CountryList() {
                       </Link>
                     </TableCell>
                   </TableRow>
+                  
                   <TableRow>
                     <TableCell>
                       <Typography variant="subtitle1">
@@ -186,6 +271,16 @@ export default function CountryList() {
                       <Typography>{selectedRow.type}</Typography>
                     </TableCell>
                   </TableRow>
+
+                  {/* <TableRow>
+                    <TableCell>
+                      <Typography variant="subtitle1">
+                        <strong>본문</strong>
+                      </Typography>
+                      <Typography>{selectedRow.body}</Typography>
+                    </TableCell>
+                  </TableRow> */}
+
                 </TableBody>
               </Table>
             </TableContainer>
@@ -193,6 +288,14 @@ export default function CountryList() {
         </Box>
       )}
     </Box>
+    {/* <Box style={{ height:'20px' }} /> */}
+    {/* <Box style={{ height:'40px', fontSize: '24px',marginLeft : "20px" }}>
+        Financial Times Today's Tow words
+    <Box style={{ height:'20px' }} />
+    <TopWords />
+    </Box> */}
+
+
     </>
   );
 }

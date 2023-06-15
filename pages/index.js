@@ -1,6 +1,7 @@
 import CountryList from '../components/CountryList';
-import { Grid, TextField, Button, Box } from '@material-ui/core';
-import { supabase } from '../lib/initSupabase';
+
+import { Button, Box } from '@material-ui/core';
+import { FiMenu } from "react-icons/fi"
 import { useState } from 'react';
 import 'react-calendar/dist/Calendar.css';
 
@@ -8,6 +9,7 @@ import 'react-calendar/dist/Calendar.css';
 export default function Home() {
   const [showTextField, setShowTextField] = useState(false);
   const [textValue, setTextValue] = useState("");
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const toggleTextField = () => {
     setShowTextField(!showTextField);
   };
@@ -24,50 +26,53 @@ export default function Home() {
   const handleTextAreaChange = (event) => {
     setTextValue(event.target.value);
   };
+  const toggleDrawer = () => {
+    setIsDrawerOpen(!isDrawerOpen);
+  };
 
-  return (
-    <main>
-      <header style={{backgroundColor: "white"}}>
-      <Box className="header-left">
-        <a href="#" className="header-logo">Financial Times 뉴스 요약</a>
-        
-      </Box>
-      <Box className="header-right">
-        <Button variant="contained" color="primary" onClick={toggleTextField}>
-          {showTextField ? "Hide Text Field" : "Show Text Field"}
-          </Button>
-         
-      </Box>
-    </header>
-    
-    <Box height ="10"></Box>
+  const handleDrawerItemClick = () => {
+    // Handle the action when a menu item is clicked
+    // For example, you can perform navigation or other actions hereF3F3F3
+    toggleDrawer();
+  };
+
+  return (  
+    <>
+    <Box style={{ backgroundColor : "#FFFFFF" }}>
   
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={showTextField ? 7 : 12}>
-          <CountryList />
-        </Grid>
-        <Grid item xs={12} md={showTextField ? 5 : 0}>
-          {showTextField && (
-            <>
-              <TextField
-                label="My Text Area"
-                name="myTextArea"
-                multiline
-                rows={30}
-                variant="outlined"
-                fullWidth
-                id="myTextArea"
-                value={textValue}
-                onChange={handleTextAreaChange}
-              />
-              <Button variant="contained" color="primary" onClick={downloadTxtFile}>
-                Download as .txt
-              </Button>
-            </>
-          )}
-          
-        </Grid>
-      </Grid>
-    </main>
+      <header style={{backgroundColor: "#000033", height : "120px"}}>
+      <Box className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <a href="#" className="header-logo" style={{ color: 'white' }}>Financial Times</a>
+            <Button variant="contained" onClick={toggleDrawer} style={{ backgroundColor: 'transparent', border: 'none' }}>
+            <FiMenu color="#ffffff" size={50} />
+          </Button>
+        </Box>
+
+      </header>
+  <Box style={{ backgroundColor : "#FFFFFF", margin :"30px" }}>
+    
+    <Box justifyContent='center' alignItems='center'>
+      <CountryList />
+    </Box>   
+  </Box>  
+  </Box>
+  <Box style={{height:"50px", backgroundColor :"#000033"}}/>   
+  </>
   );
 }
+
+
+{/* <Drawer anchor="left" open={isDrawerOpen} onClose={toggleDrawer} PaperProps={{ style: { width: 350 } }}> */}
+        // <List>
+        //   {/* Add your menu items here */}
+        //   <ListItem button onClick={handleDrawerItemClick}>
+        //     <ListItemText primary="Menu Item 1" />
+        //   </ListItem>
+        //   <ListItem button onClick={handleDrawerItemClick}>
+        //     <ListItemText primary="Menu Item 2" />
+        //   </ListItem>
+        //   <ListItem button onClick={handleDrawerItemClick}>
+        //     <ListItemText primary="Menu Item 3" />
+        //   </ListItem>
+        // </List>
+      // </Drawer>
